@@ -1,9 +1,11 @@
 import { useState, useRef, useContext } from 'react';
+import { useHistory } from 'react-router-dom';
 import AuthContext from '../../store/auth-context';
 
 import classes from './AuthForm.module.css';
 
 const AuthForm = () => {
+ const history = useHistory();
   const emailInputRef = useRef();
   const passwordInputRef = useRef();
 
@@ -35,7 +37,7 @@ const authCtx = useContext(AuthContext)
           body:JSON.stringify({
             email: enteredEmail,
             password: enteredPassword,
-            returnSecureToken: true
+            returnSecureToken: true,
           }),
           headers:{
             'Content-Type':'application/json'
@@ -57,7 +59,8 @@ const authCtx = useContext(AuthContext)
           })
         }
       }).then(data => {
-        authCtx.login(data.idToken)
+        authCtx.login(data.idToken);
+        history.replace('/')
       }).catch(err => {
         alert(err.message);
       })
