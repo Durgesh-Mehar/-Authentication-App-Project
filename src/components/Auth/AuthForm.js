@@ -5,88 +5,92 @@ import AuthContext from '../../store/auth-context';
 import classes from './AuthForm.module.css';
 
 const AuthForm = () => {
- const history = useHistory();
-  const emailInputRef = useRef();
-  const passwordInputRef = useRef();
+  const history = useHistory()
+  const Authcntxt = useContext(AuthContext)
+  const emailInputref = useRef()
+  const posswardInputref = useRef()
 
-const authCtx = useContext(AuthContext)
 
   const [isLogin, setIsLogin] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
-
+  const [isLoading,setisLoading]=useState(false)
   const switchAuthModeHandler = () => {
     setIsLogin((prevState) => !prevState);
   };
+  const submithandler = (event)=>{
+    event.preventDefault()
 
-  const submitHandler = (event) => {
-      event.preventDefault();
-      
-      const enteredEmail = emailInputRef.current.value;
-      const enteredPassword = passwordInputRef.current.value;
+    const EnteredEmail = emailInputref.current.value
+    const EnteredPossward = posswardInputref.current.value
+    console.log(EnteredEmail,EnteredPossward)
+    setisLoading(true)
+    let url
+    if (isLogin) {
+      url = 'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyBWnPWvAOvBETqTLWvqNMnJdmcj8MmPRX4'
+     
+    } else {
+        url = 'https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyBWnPWvAOvBETqTLWvqNMnJdmcj8MmPRX4'
+    }
 
-      setIsLoading(true);
-      let url;
-      if (isLogin) {
-        url =  'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyBWnPWvAOvBETqTLWvqNMnJdmcj8MmPRX4';
-     } else {
-        url = 'https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyBWnPWvAOvBETqTLWvqNMnJdmcj8MmPRX4';
-     }
-        fetch(url,
-        {
-          method:'POST',
-          body:JSON.stringify({
-            email: enteredEmail,
-            password: enteredPassword,
-            returnSecureToken: true,
-          }),
-          headers:{
-            'Content-Type':'application/json'
+    fetch(url,{
+      method:'POST',
+      body:JSON.stringify({
+        email:EnteredEmail,
+        password:EnteredPossward,
+        returnSecureToken:true
+      }),
+      headers:{
+        'Content-Type': 'application/json'
+      }
+    }).then(response=>{
+      setisLoading(false)
+      if(response.ok){
+        return response.json()
+      }else{
+        return response.json().then(data=>{
+          let errorMessage = 'Authentication failed'
+          if(data&&data.error&&data.error.message){
+            errorMessage = data.error.message 
+            
+            throw new Error(errorMessage)
+            
           }
-        }
-      ).then(res => {
-        setIsLoading(false);
-        if (res.ok) {
-          //....
-        } else {
-         return  res.json().then(data => {
-            // show the error
-            let errorMessage = 'Authentication failed';
-            // if(data && data.error && data.error.message){
-            //   errorMessage = data.error.message;
-            //  }
-             
-             throw new Error(errorMessage);
-          })
-        }
-      }).then(data => {
-        authCtx.login(data.idToken);
-        history.replace('/')
-      }).catch(err => {
-        alert(err.message);
-      })
+          
+          console.log(data)
+        })
+      }
+    }).then((data)=>{
+      Authcntxt.Login(data.idToken)
+      history.replace('/')
+    }
+     
 
-    
+      )
+    .catch((error)=>{
+        alert(error.message)
+    })
   }
-
   return (
     <section className={classes.auth}>
       <h1>{isLogin ? 'Login' : 'Sign Up'}</h1>
-      <form onSubmit={submitHandler}>
+      <form  onSubmit={submithandler}>
         <div className={classes.control}>
           <label htmlFor='email'>Your Email</label>
-          <input type='email' id='email' required  ref={emailInputRef}/>
+          <input type='email' id='email' required  ref = {emailInputref}/>
         </div>
         <div className={classes.control}>
           <label htmlFor='password'>Your Password</label>
           <input
             type='password'
             id='password'
-            required ref={passwordInputRef}
+            required
+            ref={posswardInputref}
           />
         </div>
         <div className={classes.actions}>
-        {!isLoading && <button>{isLogin?'Login': 'Create Account'}</button>}
-        {isLoading && <p>Sending request...</p>}
+          
+          {!isLoading&&<button>{isLogin?'Login': 'Create Account'}</button>}
+          {isLoading&&<p>sending request.........</p>}
+
           <button
             type='button'
             className={classes.toggle}
